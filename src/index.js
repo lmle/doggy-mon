@@ -6,6 +6,15 @@ const { PETHARBOR_SEARCH_URL, PETHARBOR_DOMAIN } = require('./constants/petharbo
 const dogKeys = require('./constants/dogKeys');
 const getCurrentISO = require('./utils/getCurrentISO');
 let previousDogs = [];
+const app = express();
+
+app.get('/', (req, res) => {
+  res.send('Hey there, doggy-mon is running.');
+});
+
+app.listen(process.env.PORT, () => {
+  console.log(`doggy-mon port ${process.env.PORT}`);
+});
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
