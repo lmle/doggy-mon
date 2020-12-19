@@ -9,7 +9,7 @@ let previousDogs = [];
 const app = express();
 
 app.get('/', (req, res) => {
-  res.send('Hey there, doggy-mon is running.');
+  res.send('Bark bark, doggy-mon is running.');
 });
 
 app.listen(process.env.PORT, () => {
