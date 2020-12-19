@@ -19,7 +19,7 @@ app.listen(process.env.PORT, () => {
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const monitorDogs = async () => {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
   const page = await browser.newPage();
 
   await page.goto(PETHARBOR_SEARCH_URL);
