@@ -2,7 +2,7 @@ const express = require('express');
 const puppeteer = require('puppeteer');
 const sgMail = require('@sendgrid/mail');
 const uniqBy = require('lodash.uniqby');
-const { PETHARBOR_SEARCH_URL, PETHARBOR_DOMAIN } = require('./constants/petharbor');
+const { PETHARBOR_SPECIAL_NEEDS_DOGS_URL, PETHARBOR_DOMAIN } = require('./constants/petharbor');
 const dogKeys = require('./constants/dogKeys');
 const getCurrentISO = require('./utils/getCurrentISO');
 let previousDogs = [];
@@ -22,7 +22,7 @@ const monitorDogs = async () => {
   const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
   const page = await browser.newPage();
 
-  await page.goto(PETHARBOR_SEARCH_URL);
+  await page.goto(PETHARBOR_SPECIAL_NEEDS_DOGS_URL);
 
   const currentDogs = await page.evaluate((keys, petharborDomain) => {
     const tdMap = {
@@ -69,9 +69,11 @@ const monitorDogs = async () => {
     return dogs;
   }, dogKeys, PETHARBOR_DOMAIN);
 
-  const newDogs = currentDogs.filter((currentDog) => {
-    return !previousDogs.find((previousDog) => previousDog[dogKeys.ID] === currentDog[dogKeys.ID]);
-  });
+  const newDogs = currentDogs
+    .filter((currentDog) => {
+      return !previousDogs.find((previousDog) => previousDog[dogKeys.ID] === currentDog[dogKeys.ID]);
+    })
+    .reverse();
 
   if (newDogs.length) {
     previousDogs = currentDogs;
@@ -130,5 +132,4 @@ const sendAppHealthEmail = async () => {
 monitorDogs();
 setInterval(monitorDogs, process.env.DOG_EMAIL_INTERVAL_MILLISECONDS);
 
-sendAppHealthEmail();
 setInterval(sendAppHealthEmail, process.env.APP_HEALTH_EMAIL_INTERVAL_MILLISECONDS);
