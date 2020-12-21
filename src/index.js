@@ -75,9 +75,11 @@ const monitorDogs = async () => {
     const html = newDogs
       .map((dog) => (`
         <p>
-          <img src='${dog[dogKeys.IMAGE_URL]}' />
-          <br />
-          <a href='${dog[dogKeys.URL]}'>${dog[dogKeys.NAME]}</a>
+          <a href='${dog[dogKeys.URL]}'>
+            <img src='${dog[dogKeys.IMAGE_URL]}' />
+            <br />
+            ${dog[dogKeys.NAME]}
+          </a>
           ${['id', 'sex', 'color', 'breed', 'age', 'date'].map((key) => `<br /><b>${key}:</b> ${dog[key]}`).join('')}
           <br />
           <a href='mailto:SJAdopt@sanjoseca.gov?subject=${encodeURIComponent(`Interested in ${dog[dogKeys.ID]}`)}&body=${encodeURIComponent(`Hello, I am interested in ${dog[dogKeys.ID]}. Please let me know if I can meet him/her. Thank you!`)}'>Draft email</a>
