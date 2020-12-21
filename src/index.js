@@ -80,7 +80,7 @@ const monitorDogs = async () => {
           <a href='${dog[dogKeys.URL]}'>${dog[dogKeys.NAME]}</a>
           ${['id', 'sex', 'color', 'breed', 'age', 'date'].map((key) => `<br /><b>${key}:</b> ${dog[key]}`).join('')}
           <br />
-          <a href='mailto:SJAdopt@sanjoseca.gov?subject=${encodeURIComponent(`Interested in ${dog[dogKeys.ID]}`)}&body=${encodeURIComponent(`Hello, I am interested in ${dog[dogKeys.ID]}. Please let me know if I can meet him/her. Thank you!`)}'>Send email</a>
+          <a href='mailto:SJAdopt@sanjoseca.gov?subject=${encodeURIComponent(`Interested in ${dog[dogKeys.ID]}`)}&body=${encodeURIComponent(`Hello, I am interested in ${dog[dogKeys.ID]}. Please let me know if I can meet him/her. Thank you!`)}'>Draft email</a>
         </p>
       `))
       .join('');
