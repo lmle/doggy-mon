@@ -1,7 +1,8 @@
 const express = require('express');
-const puppeteer = require('puppeteer');
 const sgMail = require('@sendgrid/mail');
 const uniqBy = require('lodash.uniqby');
+const cheerio = require('cheerio');
+const fetch = require('node-fetch');
 const { PETHARBOR_SPECIAL_NEEDS_DOGS_URL, PETHARBOR_DOMAIN } = require('./constants/petharbor');
 const dogKeys = require('./constants/dogKeys');
 const getCurrentISO = require('./utils/getCurrentISO');
@@ -20,49 +21,42 @@ app.listen(process.env.PORT, () => {
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const monitorDogs = async () => {
-  const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-  const page = await browser.newPage();
-  const $ = null; // for eslint
+  const response = await fetch(PETHARBOR_SPECIAL_NEEDS_DOGS_URL);
+  const $ = cheerio.load(await response.text());
 
-  await page.goto(PETHARBOR_SPECIAL_NEEDS_DOGS_URL);
+  const tdMap = {
+    0: dogKeys.IMAGE_URL,
+    1: dogKeys.NAME,
+    2: dogKeys.SEX,
+    3: dogKeys.COLOR,
+    4: dogKeys.BREED,
+    5: dogKeys.AGE,
+    7: dogKeys.DATE,
+  };
 
-  const currentDogs = await page.evaluate((keys, petharborDomain) => {
-    const tdMap = {
-      0: keys.IMAGE_URL,
-      1: keys.NAME,
-      2: keys.SEX,
-      3: keys.COLOR,
-      4: keys.BREED,
-      5: keys.AGE,
-      7: keys.DATE,
-    };
+  const currentDogs = [];
 
-    const dogs = [];
+  $('.ResultsTable tr').each(function getCurrentDogs(trIndex) {
+    if (trIndex === 0) return;
 
-    $('.ResultsTable tr').each(function getDogs(trIndex) {
-      if (trIndex === 0) return;
+    const dog = {};
 
-      const dog = {};
+    $(this).find('td').each(function pushDog(i) {
+      const key = tdMap[i];
 
-      $(this).find('td').each(function pushDog(i) {
-        const key = tdMap[i];
-
-        if (key === keys.IMAGE_URL) {
-          dog[keys.IMAGE_URL] = `${petharborDomain}/${$(this).find('img').attr('src')}`;
-          dog[keys.ID] = (new URLSearchParams($(this).find('a').attr('href').split('?')[1])).get('ID');
-          dog[keys.URL] = `${petharborDomain}/pet.asp?uaid=SNJS.${dog[keys.ID]}`;
-        } else if (key === keys.DATE) {
-          dog[keys.DATE] = $(this).find('span').text();
-        } else if (key) {
-          dog[key] = $(this).text();
-        }
-      });
-
-      dogs.push(dog);
+      if (key === dogKeys.IMAGE_URL) {
+        dog[dogKeys.IMAGE_URL] = `${PETHARBOR_DOMAIN}/${$(this).find('img').attr('src')}`;
+        dog[dogKeys.ID] = (new URLSearchParams($(this).find('a').attr('href').split('?')[1])).get('ID');
+        dog[dogKeys.URL] = `${PETHARBOR_DOMAIN}/pet.asp?uaid=SNJS.${dog[dogKeys.ID]}`;
+      } else if (key === dogKeys.DATE) {
+        dog[dogKeys.DATE] = $(this).find('span').text();
+      } else if (key) {
+        dog[key] = $(this).text();
+      }
     });
 
-    return dogs;
-  }, dogKeys, PETHARBOR_DOMAIN);
+    currentDogs.push(dog);
+  });
 
   const newDogs = currentDogs
     .filter((c) => !previousDogs.find((p) => p[dogKeys.ID] === c[dogKeys.ID]))
@@ -102,8 +96,6 @@ const monitorDogs = async () => {
       console.error(error); // eslint-disable-line no-console
     }
   }
-
-  await browser.close();
 };
 
 const sendAppHealthEmail = async () => {

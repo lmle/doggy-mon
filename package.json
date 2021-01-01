@@ -14,9 +14,10 @@
   "license": "ISC",
   "dependencies": {
     "@sendgrid/mail": "^7.4.0",
+    "cheerio": "^1.0.0-rc.5",
     "express": "^4.17.1",
     "lodash.uniqby": "^4.7.0",
-    "puppeteer": "^5.5.0"
+    "node-fetch": "^2.6.1"
   },
   "devDependencies": {
     "eslint": "^7.16.0",
