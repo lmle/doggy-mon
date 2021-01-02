@@ -1,5 +1,5 @@
 # doggy-mon
-doggy-mon monitors a list of adoptable dogs found on the PetHarbor.com website and sends an email when dogs are added to the list.
+doggy-mon monitors a list of adoptable dogs on the PetHarbor.com website and sends an email when dogs are added to the list.
 
 ## Setup
 ```
