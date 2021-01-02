@@ -3,12 +3,13 @@ const sgMail = require('@sendgrid/mail');
 const uniqBy = require('lodash.uniqby');
 const cheerio = require('cheerio');
 const fetch = require('node-fetch');
+const Redis = require('ioredis');
 const { PETHARBOR_SPECIAL_NEEDS_DOGS_URL, PETHARBOR_DOMAIN } = require('./constants/petharbor');
 const dogKeys = require('./constants/dogKeys');
 const getCurrentISO = require('./utils/getCurrentISO');
 
 const app = express();
-let previousDogs = [];
+const redis = new Redis(process.env.REDIS_URL);
 
 app.get('/', (req, res) => {
   res.send('Bark bark, doggy-mon is running.');
@@ -18,6 +19,7 @@ app.listen(process.env.PORT, () => {
   console.log(`doggy-mon port ${process.env.PORT}`); // eslint-disable-line no-console
 });
 
+redis.set('previousDogs', JSON.stringify([]));
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const monitorDogs = async () => {
@@ -58,12 +60,15 @@ const monitorDogs = async () => {
     currentDogs.push(dog);
   });
 
+  const jsonPreviousDogs = await redis.get('previousDogs');
+  const previousDogs = JSON.parse(jsonPreviousDogs);
+
   const newDogs = currentDogs
     .filter((c) => !previousDogs.find((p) => p[dogKeys.ID] === c[dogKeys.ID]))
     .reverse();
 
   if (newDogs.length) {
-    previousDogs = currentDogs;
+    redis.set('previousDogs', JSON.stringify(currentDogs));
     const subject = `New Dogs: ${uniqBy(newDogs.map((dog) => dog[dogKeys.BREED]), (breed) => breed.toLowerCase()).join(' | ')}`;
 
     const html = newDogs
@@ -118,5 +123,4 @@ const sendAppHealthEmail = async () => {
 
 monitorDogs();
 setInterval(monitorDogs, process.env.DOG_EMAIL_INTERVAL_MILLISECONDS);
-
 setInterval(sendAppHealthEmail, process.env.APP_HEALTH_EMAIL_INTERVAL_MILLISECONDS);

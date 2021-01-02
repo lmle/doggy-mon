@@ -16,6 +16,7 @@
     "@sendgrid/mail": "^7.4.0",
     "cheerio": "^1.0.0-rc.5",
     "express": "^4.17.1",
+    "ioredis": "^4.19.4",
     "lodash.uniqby": "^4.7.0",
     "node-fetch": "^2.6.1"
   },
