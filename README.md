@@ -18,6 +18,13 @@ In `config.env`, add the following variables:
 | APP_HEALTH_EMAIL_INTERVAL_MILLISECONDS | Number | Milliseconds between sending an email to say the application is still running. |
 | REDIS_URL | String | URL for Redis server (e.g. '//127.0.0.1:6379') |
 
+For example,
+```
+// src/config.env
+export PORT=3333
+```
+
+Then,
 ```
 npm i
 brew services start redis
